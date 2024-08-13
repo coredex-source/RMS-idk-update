@@ -1,8 +1,8 @@
-import mysql.connector as my
+import mysql.connector
 from tabulate import tabulate
 
 
-conn = sql.connect(host='localhost',user='root',passwd='Ayukhu0502.',database='railway_management')
+conn = mysql.connector.connect(host='localhost',user='root',passwd='Ayukhu0502.',database='railway_management')
 mycursor = conn.cursor()
 if conn.is_connected():
     print('successfully connected')
