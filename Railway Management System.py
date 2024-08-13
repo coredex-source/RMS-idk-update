@@ -1,36 +1,89 @@
 import mysql.connector
 from tabulate import tabulate
+import configparser
+import os
+import time
+
+config = configparser.ConfigParser()
+
+if os.path.exists("config.txt")!=True:
+    config['Checks'] = {
+    'table_exists': 'False',
+    }
+    config['Creds'] = {
+        'username': '',
+        'password': '',
+    }
+
+    # Write to config.txt
+    with open('config.txt', 'w') as configfile:
+        config.write(configfile)
+
+config.read('config.txt')
+
+if config['Creds']['username'] == '' and config['Creds']['password'] == '':
+    os.system('cls')
+    print("\n*************************************************************************")
+    print("                     RAILWAY MANAGEMENT SYSTEM         ")
+    print("\nMySQL Login:\n")
+    sqlname=input("Username: ")
+    sqlpass=input("Password: ")
+    quesave=input("Enable auto-login? (Y/N): ")
+    try:
+        conn = mysql.connector.connect(host='localhost',user=sqlname,passwd=sqlpass)
+        os.system('cls')
+    except:
+        print("Username or password does not exists.")
+        exit()
+    if quesave=="Y" or quesave=="y":
+        config['Creds']['username']=sqlname
+        config['Creds']['password']=sqlpass
+        with open('config.txt', 'w') as configfile:
+            config.write(configfile)
+else:
+    sqlname=config['Creds']['username']
+    sqlpass=config['Creds']['password']
+    os.system('cls')
+
+try:
+    conn = mysql.connector.connect(host='localhost',user='root',passwd=sqlpass,database='railway_management')
+    mycursor = conn.cursor()
+except mysql.connector.errors.ProgrammingError:
+    conn = mysql.connector.connect(host='localhost',user='root',passwd=sqlpass)
+    mycursor = conn.cursor()
+    mycursor.execute("CREATE DATABASE railway_management")
+    conn.commit()
 
 
-conn = mysql.connector.connect(host='localhost',user='root',passwd='Ayukhu0502.',database='railway_management')
-mycursor = conn.cursor()
 if conn.is_connected():
-    print('successfully connected')
+    print('Successfully Connected!')
 else:
     print('Not connected')
-
-print("\n*************************************************************************")
-print("                     RAILWAY MANAGEMENT SYSTEM         ")
-
 
 #PNR is the abbreviation of "Passenger Name Record" and
 # it is also used as a booking number
 def create_passengers():
-    try:
-        query = 'Create table if not exists passengers\
-                 (\nPname varchar(30) not null,\
-                  Age integer(25),\
-                  Trainno integer(20),\
-                  No_of_pass integer(25),\
-                  Class varchar(15),\
-                  Destination varchar(30),\
-                  Amount integer(20),\
-                  Status varchar(25),\
-                  Pnrno varchar(20))'
-        mycursor.execute(query)
-        print('\nTable Passengers created')
-    except:
-        print('\nERROR FOUND')
+    if config['Checks']['table_exists']!='True':
+        try:
+            query = 'Create table if not exists passengers\
+                    (\nPname varchar(30) not null,\
+                    Age integer(25),\
+                    Trainno integer(20),\
+                    No_of_pass integer(25),\
+                    Class varchar(15),\
+                    Destination varchar(30),\
+                    Amount integer(20),\
+                    Status varchar(25),\
+                    Pnrno varchar(20))'
+            mycursor.execute(query)
+            print('\nTable Passengers created')
+            config['Checks']['table_exists'] = "True"
+            with open('config.txt', 'w') as configfile:
+                config.write(configfile)
+        except:
+            print('\nERROR FOUND')
+    else:
+        print('You created a table previously.')
 
 
 def add_passengers():
@@ -159,7 +212,6 @@ def ticketreservation():
         print('\nPLEASE CHOOSE A TRAIN')
     print('\nYour TOTAL TICKET PRICE is : ',s,'\n')
 
-
 def cancel():
     showpassengers()
     try:
@@ -176,43 +228,64 @@ def cancel():
     except:
         print('\nERROR FOUND')
 
-
+def reset_config():
+    config['Checks']['table_exists'] = "False"
+    config['Creds']['username']=''
+    config['Creds']['password']=''
+    with open('config.txt', 'w') as configfile:
+        config.write(configfile)
+    print("Reset was complete.")
 # MAIN PROGRAM
 while True:
+    time.sleep(1)
+    os.system('cls')
+    print("\n*************************************************************************")
+    print("                     RAILWAY MANAGEMENT SYSTEM         ")
     print("\nPRESS     FOR")
-    print("   1.     Create Table Passenger")
-    print("   2.     Add new Passenger Detail")
-    print("   3.     Create Table Train Detail")
-    print("   4.     Add new in Train Detail")
-    print("   5.     Show all from Passenger Table")
-    print("   6.     Show all from Train Detail")
-    print("   7.     Show PNR NO.")
-    print("   8.     Reservation of Ticket")
-    print("   9.     Cancellation of Reservation")
-    print("   10.    To Exit")
+    count=1
+    with open('titles.txt','r') as disp:
+        for l in disp:
+            if count<=9:
+                print("  "+str(count)+".      "+l, end='')
+            else:
+                print(" "+str(count)+".      "+l, end='')
+            count+=1
     opt = int(input('\nEnter your choice : '))
     if opt==1:
+        os.system('cls')
         create_passengers()
     elif opt==2:
+        os.system('cls')
         add_passengers()
     elif opt==3:
+        os.system('cls')
         create_trainsdetail()
     elif opt==4:
+        os.system('cls')
         add_trainsdetail()
     elif opt==5:
+        os.system('cls')
         showpassengers()
     elif opt==6:
+        os.system('cls')
         showtrainsdetail()
     elif opt==7:
+        os.system('cls')
         disp_pnrno()
     elif opt==8:
+        os.system('cls')
         ticketreservation()
     elif opt==9:
         cancel()
     elif opt==10:
-        print('THANKYOU')
+        os.system('cls')
+        reset_config()
+    elif opt==11:
+        os.system('cls')
+        print('\nTHANKYOU\n')
         break    
     else:
+        os.system('cls')
         print('\nWRONG CHOICE TRY AGAIN')
         continue
 

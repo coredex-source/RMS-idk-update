@@ -1,0 +1,11 @@
+Create Table Passenger
+Add new Passenger Detail
+Create Table Train Detail
+Add new in Train Detail
+Show all from Passenger Table
+Show all from Train Detail
+Show PNR NO.
+Reservation of Ticket
+Cancellation of Reservation
+Reset Config File
+To Exit
